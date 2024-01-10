@@ -55,7 +55,7 @@ public class EmoteAuditEventHandler extends ListenerAdapter {
 	}
 	
 	private EmbedBuilder startEmbed(GenericEmojiEvent event, String header, String message, int color) {
-		
+		String ext = event.getEmoji().isAnimated() ? ".gif" : ".png";
 		return new EmbedBuilder()
     			// .setTitle("Title")
     			.setDescription(message)
@@ -63,7 +63,7 @@ public class EmoteAuditEventHandler extends ListenerAdapter {
     			.setTimestamp(Instant.now())
     			.setAuthor(header)
     			// .setFooter("")
-    			.setThumbnail("attachment://" + event.getEmoji().getName() + ".png");
+    			.setThumbnail("attachment://" + event.getEmoji().getName() + ext);
 	}
 	
 	private AuditLogEntry getAuditLog(ActionType action, Guild guild) {
@@ -87,6 +87,7 @@ public class EmoteAuditEventHandler extends ListenerAdapter {
     			"Custom Emote Added",
     			"Added by "+adder.getAsMention(),
     			Color.green.getRGB())
+    			.addField("Name", emote.getName(), true)
     			.build();
     	InputStream emoteStream;
 		try {
@@ -97,7 +98,8 @@ public class EmoteAuditEventHandler extends ListenerAdapter {
 			return;
 		}
     	
-    	auditChannel.sendFiles(FileUpload.fromData(emoteStream, event.getEmoji().getName() + ".png")).setEmbeds(embed).queue();
+		String ext = emote.isAnimated() ? ".gif" : ".png";
+    	auditChannel.sendFiles(FileUpload.fromData(emoteStream, event.getEmoji().getName() + ext)).setEmbeds(embed).queue();
     }
     
     @Override
@@ -113,6 +115,7 @@ public class EmoteAuditEventHandler extends ListenerAdapter {
     			"Custom Emote Removed",
     			"Removed by "+remover.getAsMention(),
     			Color.red.getRGB())
+    			.addField("Name", emote.getName(), true)
     			.build();
     	InputStream emoteStream;
 		try {
@@ -123,7 +126,8 @@ public class EmoteAuditEventHandler extends ListenerAdapter {
 			return;
 		}
     	
-    	auditChannel.sendFiles(FileUpload.fromData(emoteStream, event.getEmoji().getName() + ".png")).setEmbeds(embed).queue();
+		String ext = emote.isAnimated() ? ".gif" : ".png";
+    	auditChannel.sendFiles(FileUpload.fromData(emoteStream, event.getEmoji().getName() + ext)).setEmbeds(embed).queue();
     }
 
     @Override
@@ -151,7 +155,8 @@ public class EmoteAuditEventHandler extends ListenerAdapter {
 			return;
 		}
     	
-    	auditChannel.sendFiles(FileUpload.fromData(emoteStream, event.getEmoji().getName() + ".png")).setEmbeds(embed).queue();
+		String ext = emote.isAnimated() ? ".gif" : ".png";
+    	auditChannel.sendFiles(FileUpload.fromData(emoteStream, event.getEmoji().getName() + ext)).setEmbeds(embed).queue();
     }
     
     @Override
