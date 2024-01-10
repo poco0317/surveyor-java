@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import bar.barinade.surveyor.discord.handler.BasicMessageHandler;
 import bar.barinade.surveyor.discord.handler.CommandHandlerBase;
+import bar.barinade.surveyor.discord.handler.EmoteInspectionCommandHandler;
 import bar.barinade.surveyor.discord.handler.ServerConfigCommandHandler;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
@@ -86,10 +87,11 @@ public class BotManager {
 		// fun
 		builder.setActivity(Activity.watching("...."));
 		
-		// how to care about commands
+		// anything listening directly to events goes here
 		final CommandHandlerBase configCommands = springContext.getBean(ServerConfigCommandHandler.class);
 		final BasicMessageHandler msgCommands = springContext.getBean(BasicMessageHandler.class);
-		builder.addEventListeners(configCommands, msgCommands);
+		final EmoteInspectionCommandHandler emoteCommands = springContext.getBean(EmoteInspectionCommandHandler.class);
+		builder.addEventListeners(configCommands, msgCommands, emoteCommands);
 		
 		// about to finish making the client...
 		m_logger.info("Waiting for login");
@@ -102,7 +104,7 @@ public class BotManager {
 		
 		// how to care about slash commands
 		// have to do this after trying to log in
-		upsertHandlerCommands(result, configCommands);
+		upsertHandlerCommands(result, configCommands, emoteCommands);
 		
 		m_logger.info("BotManager initialize finished");
 	}

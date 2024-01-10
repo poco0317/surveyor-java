@@ -60,7 +60,9 @@ public abstract class CommandHandlerBase extends ListenerAdapter {
 		}
 		
 		if (handler == null) {
-			m_logger.warn("Received command event for unknown handler! Command name: {}", name);
+			// this logs at the wrong moments
+			// m_logger.warn("Received command event for unknown handler! Command name: {}", name);
+			return;
 		} else {
 			
 			if (group != null && subname != null) {
