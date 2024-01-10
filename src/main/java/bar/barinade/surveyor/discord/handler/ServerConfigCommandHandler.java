@@ -26,17 +26,4 @@ public class ServerConfigCommandHandler extends CommandHandlerBase {
 	
 	// ...
 	
-	private boolean hasPermission(SlashCommandInteractionEvent event) {
-		Member mmbr = event.getMember();
-		if (mmbr != null
-				&& !mmbr.isOwner()
-				&& !mmbr.hasPermission(Permission.ADMINISTRATOR)
-				&& !mmbr.hasPermission(Permission.MANAGE_SERVER)) {
-			m_logger.info("{} attempted to use config command without having permission", mmbr.getId());
-			event.getHook().editOriginal("You must have Manage Server or Administrator permissions to use this command.").queue();;
-			return false;
-		}
-		return true;
-	}
-
 }
