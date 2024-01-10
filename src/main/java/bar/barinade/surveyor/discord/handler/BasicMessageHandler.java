@@ -1,11 +1,9 @@
 package bar.barinade.surveyor.discord.handler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -13,13 +11,8 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 @Component
 @Scope("prototype")
+@Slf4j
 public class BasicMessageHandler extends ListenerAdapter {
-	
-	private static final Logger m_logger = LoggerFactory.getLogger(BasicMessageHandler.class);
-	
-	
-	@Value("${discord.ownerid}")
-	private String ownerId;
 	
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
@@ -35,7 +28,6 @@ public class BasicMessageHandler extends ListenerAdapter {
 	private boolean hasPermission(MessageReceivedEvent event) {
 		Member mmbr = event.getMember();
 		if (mmbr != null
-				&& !mmbr.getId().equals(ownerId)
 				&& !mmbr.isOwner()
 				&& !mmbr.hasPermission(Permission.ADMINISTRATOR)
 				&& !mmbr.hasPermission(Permission.MANAGE_SERVER)) {

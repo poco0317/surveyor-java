@@ -3,8 +3,6 @@ package bar.barinade.surveyor.discord;
 import javax.annotation.PostConstruct;
 import javax.security.auth.login.LoginException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -13,6 +11,7 @@ import org.springframework.stereotype.Service;
 import bar.barinade.surveyor.discord.handler.BasicMessageHandler;
 import bar.barinade.surveyor.discord.handler.CommandHandlerBase;
 import bar.barinade.surveyor.discord.handler.ServerConfigCommandHandler;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -24,10 +23,9 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 @Service
+@Slf4j
 public class BotManager {
-	
-	private static final Logger m_logger = LoggerFactory.getLogger(BotManager.class);
-	
+		
 	@Value("${discord.token}")
 	private String token;
 	

@@ -7,18 +7,14 @@ import java.util.HashSet;
 
 import javax.annotation.PostConstruct;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 
-
+@Slf4j
 public abstract class CommandHandlerBase extends ListenerAdapter {
 	
-	private static final Logger m_logger = LoggerFactory.getLogger(CommandHandlerBase.class);
-
 	protected HashSet<String> commandNames;
 	protected HashMap<String, Method> commandEventHandlers;
 	

@@ -15,7 +15,6 @@ spring:
       
 discord:
   token: ${DISCORD_TOKEN}
-  ownerid: ${DISCORD_OWNERID}
 
 logging:
   level:
