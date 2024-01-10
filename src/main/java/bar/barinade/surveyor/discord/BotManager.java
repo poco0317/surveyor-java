@@ -71,7 +71,10 @@ public class BotManager {
 				GatewayIntent.GUILD_WEBHOOKS
 				);
 		
-		// builder.enableIntents(GatewayIntent.MESSAGE_CONTENT);
+		builder.enableIntents(
+				GatewayIntent.GUILD_EMOJIS_AND_STICKERS
+				// GatewayIntent.MESSAGE_CONTENT
+				);
 		
 		// stuff that might matter
 		builder.setChunkingFilter(ChunkingFilter.NONE);
