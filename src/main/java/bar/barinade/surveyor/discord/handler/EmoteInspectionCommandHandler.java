@@ -5,16 +5,22 @@ import java.io.FileOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import bar.barinade.surveyor.discord.serverconfig.service.ServerConfigService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.AttachedFile;
 
 @Component
@@ -22,18 +28,76 @@ import net.dv8tion.jda.api.utils.AttachedFile;
 @Slf4j
 public class EmoteInspectionCommandHandler extends CommandHandlerBase {
 
-	private static final String NAME_CMD_EXPORT_EMOTES = "export_emotes";
+	private static final String NAME_CMD_EMOTES = "emotes";
+	private static final String NAME_CMD_EXPORT = "export";
+	private static final String NAME_CMD_AUDITCHANNEL = "auditchannel";
+	
+	private static final String OPTION_CHANNEL = "channel";
+	
+	@Autowired
+	private ServerConfigService configService;
 	
 	@Override
 	public CommandData[] getCommandsToUpsert() {
 		return new CommandData[] {
-				Commands.slash(NAME_CMD_EXPORT_EMOTES, "Provides a zip of all emotes organized by username")
+				Commands.slash(NAME_CMD_EMOTES, "Provides ability to audit or export emotes")
 					.setGuildOnly(true)
 					.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_GUILD_EXPRESSIONS, Permission.MANAGE_SERVER))
+					.addSubcommands(
+						new SubcommandData(NAME_CMD_EXPORT, "Export all emotes with info about who added them"),
+						new SubcommandData(NAME_CMD_AUDITCHANNEL, "Set the channel to output emote add/update/delete information")
+							.addOption(OptionType.CHANNEL, OPTION_CHANNEL, "Text channel to send messages", false)
+						)
 		};
 	}
 
-	void cmd_export_emotes(SlashCommandInteractionEvent event) {
+	void cmd_emotes(SlashCommandInteractionEvent event) {
+		
+		String subcmd = event.getSubcommandName();
+		if (subcmd == null) {
+			event.getHook().editOriginal("You must specify a subcommand.").queue();
+			return;
+		}
+		
+		switch (subcmd) {
+			case NAME_CMD_EXPORT:
+				_cmd_export(event);
+				break;
+			case NAME_CMD_AUDITCHANNEL:
+				_cmd_audit(event);
+				break;
+			default:
+				event.getHook().editOriginal("You entered a subcommand that does not exist.").queue();
+				break;
+		}
+		
+	}
+	
+	private void _cmd_audit(SlashCommandInteractionEvent event) {
+		Long guildId = event.getGuild().getIdLong();
+		if (event.getOption(OPTION_CHANNEL) == null) {
+			event.getHook().editOriginal("Disabled emote auditing.").queue();
+			configService.setAuditChannel(guildId, null);
+			return;
+		}
+		
+		final ChannelType chantype = event.getOption(OPTION_CHANNEL).getChannelType();
+		if (!chantype.equals(ChannelType.TEXT)) {
+			event.getHook().editOriginal("You must specify a Text Channel. Your channel was of type '"+chantype.toString()+"'").queue();
+			return;
+		}
+		final GuildChannel channel = event.getOption(OPTION_CHANNEL).getAsChannel();
+		
+		if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_SEND)) {
+			event.getHook().editOriginal("I do not have permission to send messages in '"+channel.getAsMention()+"'").queue();
+			return;
+		}
+		
+		configService.setAuditChannel(guildId, channel.getIdLong());
+		event.getHook().editOriginal("Emote auditing channel set to '"+channel.getAsMention()+"'").queue();
+	}
+	
+	private void _cmd_export(SlashCommandInteractionEvent event) {
 		
 		if (!event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_GUILD_EXPRESSIONS)) {
 			event.getHook().editOriginal("I don't have permission to see the emotes.").queue();
@@ -49,7 +113,7 @@ public class EmoteInspectionCommandHandler extends CommandHandlerBase {
 				ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(tmpfile));
 				
 				StringBuilder emoteList = new StringBuilder();
-				emoteList.append("emotename,emoteid,username,userid\n");
+				emoteList.append("emotename,emoteid,username,userid,created\n");
 				
 				for (RichCustomEmoji emote : emotes) {
 					emote.getImage().download(512).exceptionally(error -> {
@@ -60,7 +124,8 @@ public class EmoteInspectionCommandHandler extends CommandHandlerBase {
 						String emoteid = emote.getId();
 						String userid = emote.getOwner().getId();
 						String username = emote.getOwner().getEffectiveName();
-						emoteList.append(emotename + "," + emoteid + "," + username + "," + userid + "\n");
+						String created = emote.getTimeCreated().toString();
+						emoteList.append(emotename + "," + emoteid + "," + username + "," + userid + "," + created + "\n");
 						
 						m_logger.info("Downloaded emote name {} ({}) by {} ({})",
 								emotename, emoteid,
