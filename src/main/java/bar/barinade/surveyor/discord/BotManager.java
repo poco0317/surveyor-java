@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import bar.barinade.surveyor.discord.handler.BasicMessageHandler;
 import bar.barinade.surveyor.discord.handler.CommandHandlerBase;
+import bar.barinade.surveyor.discord.handler.EmoteAuditEventHandler;
 import bar.barinade.surveyor.discord.handler.EmoteInspectionCommandHandler;
 import bar.barinade.surveyor.discord.handler.ServerConfigCommandHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -91,7 +92,8 @@ public class BotManager {
 		final CommandHandlerBase configCommands = springContext.getBean(ServerConfigCommandHandler.class);
 		final BasicMessageHandler msgCommands = springContext.getBean(BasicMessageHandler.class);
 		final EmoteInspectionCommandHandler emoteCommands = springContext.getBean(EmoteInspectionCommandHandler.class);
-		builder.addEventListeners(configCommands, msgCommands, emoteCommands);
+		final EmoteAuditEventHandler emoteEvents = springContext.getBean(EmoteAuditEventHandler.class);
+		builder.addEventListeners(configCommands, msgCommands, emoteCommands, emoteEvents);
 		
 		// about to finish making the client...
 		m_logger.info("Waiting for login");
